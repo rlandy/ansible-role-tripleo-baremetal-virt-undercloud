@@ -1,0 +1,3 @@
+.eggs/
+ansible_role_tripleo_baremetal_virt_undercloud.egg-info/
+
