@@ -1,0 +1,27 @@
+---
+- name: Add two macvtap devices to the undercloud VM
+  command: >
+    ip link add link {{ item }}.host_device name \
+    {{ item }}.macvtap_name address {{ item }}.mac_address \
+    type macvtap mode bridge
+  with_items: macvtap_devices
+
+- name: add ifcfg file for virthost provisioning macvtap device
+  template:
+    src: ifcfg-interface.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-{{ macvtap_devices.virthost_provisioning.vm_interface }}
+    mode: 644
+    owner: root
+    group: root
+
+- name: reboot undercloud VM
+  command: reboot
+
+- name: wait for vm to be up
+  local_action: wait_for host={{ undercloud }} state=started
+
+ - name: check that virthost provisioning mavtap device has ip address
+   command: >
+     ip link set {{ macvtap_devices.virthost_provisioning.macvtap_name }} up;
+     ip link show {{ macvtap_devices.virthost_provisioning.macvtap_name }}
+
